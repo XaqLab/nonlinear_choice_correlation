@@ -178,3 +178,81 @@ for j=1:n/6
 end
 end
 
+
+
+
+%% Defined function
+function [M, I] = permn(V, N, K)
+% PERMN - permutations with repetition
+%   Using two input variables V and N, M = PERMN(V,N) returns all
+%   permutations of N elements taken from the vector V, with repetitions.
+%   V can be any type of array (numbers, cells etc.) and M will be of the
+%   same type as V.  If V is empty or N is 0, M will be empty.  M has the
+%   size numel(V).^N-by-N. 
+%
+%   When only a subset of these permutations is needed, you can call PERMN
+%   with 3 input variables: M = PERMN(V,N,K) returns only the K-ths
+%   permutations.  The output is the same as M = PERMN(V,N) ; M = M(K,:),
+%   but it avoids memory issues that may occur when there are too many
+%   combinations.  This is particulary useful when you only need a few
+%   permutations at a given time. If V or K is empty, or N is zero, M will
+%   be empty. M has the size numel(K)-by-N. 
+%
+%   [M, I] = PERMN(...) also returns an index matrix I so that M = V(I).
+% tested in Matlab 2016a
+% version 6.1 (may 2016)
+% (c) Jos van der Geest
+% Matlab File Exchange Author ID: 10584
+% email: samelinoa@gmail.com
+
+narginchk(2,3) ;
+
+if fix(N) ~= N || N < 0 || numel(N) ~= 1 ;
+    error('permn:negativeN','Second argument should be a positive integer') ;
+end
+nV = numel(V) ;
+
+if nargin==2, % PERMN(V,N) - return all permutations
+    
+    if nV==0 || N == 0,
+        M = zeros(nV,N) ;
+        I = zeros(nV,N) ;
+        
+    elseif N == 1,
+        % return column vectors
+        M = V(:) ;
+        I = (1:nV).' ;
+    else
+        % this is faster than the math trick used for the call with three
+        % arguments.
+        [Y{N:-1:1}] = ndgrid(1:nV) ;
+        I = reshape(cat(N+1,Y{:}),[],N) ;
+        M = V(I) ;
+    end
+else % PERMN(V,N,K) - return a subset of all permutations
+    nK = numel(K) ;
+    if nV == 0 || N == 0 || nK == 0
+        M = zeros(numel(K), N) ;
+        I = zeros(numel(K), N) ;
+    elseif nK < 1 || any(K<1) || any(K ~= fix(K))
+        error('permn:InvalidIndex','Third argument should contain positive integers.') ;
+    else
+        
+        V = reshape(V,1,[]) ; % v1.1 make input a row vector
+        nV = numel(V) ;
+        Npos = nV^N ;
+        if any(K > Npos)
+            warning('permn:IndexOverflow', ...
+                'Values of K exceeding the total number of combinations are saturated.')
+            K = min(K, Npos) ;
+        end
+             
+        % The engine is based on version 3.2 with the correction
+        % suggested by Roger Stafford. This approach uses a single matrix
+        % multiplication.
+        B = nV.^(1-N:0) ;
+        I = ((K(:)-.5) * B) ; % matrix multiplication
+        I = rem(floor(I),nV) + 1 ;
+        M = V(I) ;
+    end
+end
