@@ -1,12 +1,13 @@
 clear
 close all
 clc
+%% In this code, we will generate Figure 4 in the paper. 
 %% Basic setting
 n=18; %neuron number
-s0=1;       
-srange=0.5;
-m=20000;   %sample
-Amplitude=4;
+s0=1;    
+s_range=0.5;
+m=20000;   %sample number
+Amplitude=4; 
 std_train=0.4;
 N_Relu=30;
 gamma=[0.4,0.3,1];
@@ -26,8 +27,8 @@ r0 = MixGauBrain_SubGroup (n,m,sref,gamma,A,E1);
 [R01,R02,R03] = rMomentsGenerate_SubGroup (r0,0);
 R0=[R01,R02,R03];
 %% Binary input to estimate d prime and ccTheo
-sbn=s0-srange/2;
-sbp=s0+srange/2;
+sbn=s0-s_range/2;
+sbp=s0+s_range/2;
 sb=[sbn.*ones(1,m/2),sbp.*ones(1,m/2)];
 rb = MixGauBrain_SubGroup (n,m,sb,gamma,A,E1);
 [Rb1,Rb2,Rb3] = rMomentsGenerate_SubGroup (rb,1);
@@ -36,11 +37,11 @@ Rbn=Rb( 1:m/2 , :);
 Rbp=Rb( m/2+1:end , :);
 Fb_minus=mean(Rbn,1);
 Fb_plus=mean(Rbp,1);
-fp=(Fb_plus-Fb_minus)./srange;
+fp=(Fb_plus-Fb_minus)./s_range;
 
 %% Decode with Polynomial until cubic statistics
 [sbopt,sopt,~,wopt] = DecodingEngine(R0,Rb,s0,sb);
-FisherInfo_opt=1/var(sopt);
+FisherInfo=1/var(sopt);
 
 %% Decode with random ReLu basis
 strain=s0+std_train.*randn(1,m);
@@ -255,4 +256,33 @@ else % PERMN(V,N,K) - return a subset of all permutations
         I = rem(floor(I),nV) + 1 ;
         M = V(I) ;
     end
+end
+end
+
+function [sbhat,shat,dpRb,wq] = DecodingEngine(R0,Rb,s0,sb)
+m=size(R0,1);
+srange=sb(end)-sb(1);
+
+Rbn=Rb( 1:m/2 , :);
+Rbp=Rb( m/2+1:end , :);
+
+Fb_minus=mean(Rbn,1);
+Fb_plus=mean(Rbp,1);
+fp=(Fb_plus-Fb_minus)./srange;
+
+
+F0=mean(Rb,1);
+Rref=repmat(F0,[m,1]);
+
+wq=pinv(Rb-Rref)*(sb-s0)';
+% 
+% wq=wq./(fp*wq);
+% wq = (Rb-Rref)\(sb-s0)';
+wq=wq./(fp*wq);
+
+shat=(R0-Rref)*wq+s0;
+% FisherInfo=1./var(sq);
+sbhat=(Rb-Rref)*wq+s0;
+
+dpRb=((mean(Rbp,1)-mean(Rbn,1))./(0.5.*(std(Rbp,1,1).^2+std(Rbn,1,1).^2)).^0.5);
 end
