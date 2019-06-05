@@ -1,5 +1,5 @@
 %% This code will generate Figure 5 in the paper: "Revealing nonlinear neural decoding by analyzing choices". 
-%% The encoding model is a quadratic neural code. Then we build our decoder model as a quadratic decoder.
+%% The neural encoding model is a quadratic neural code. Then we build our decoder model as a quadratic decoder.
 %% The weights are selected as optimal(Least square) or suboptimal (blind to higher).
 %% We compare the choice correlation test for the optimal and suboptimal decoding cases.
 %% Then we add information-limiting noise into the sufficient statistics.

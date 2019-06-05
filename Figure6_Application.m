@@ -12,8 +12,8 @@ end
 %% Filtered fitting plot
 figure
 jj=0;
-for shuffle=0:2
-    for MonkeyNum=1:2 
+for MonkeyNum=1:2 
+    for shuffle=0:2
         jj=jj+1;
         Pointsize=5;
         subplot(2,3,jj)
@@ -207,46 +207,54 @@ zeta=2/sqrt(pi)*n_half_pred/sqrt(sp)*1/sqrt(1-us);
 delta=sqrt(5/4)/(1-sn/sp)*sqrt((us_S1-us_S0)^2/(1-0.25*(us_S1+us_S0)^2));
 CCpredRatio=zeta./delta;
 %% Shuffle
- if shuffle==1 % shuffle r given orientation and s
-    [~,indexp]=sort(Orientation_Sp);
-    [~,indexn]=sort(Orientation_Sn);
-    response1_Sn_shuff=response1_Sn;
-    response1_Sp_shuff=response1_Sp;
-    for i=1:numel(Orientation_Sp)/2
-        temp=response1_Sp_shuff(indexp(2*i),:);
-        response1_Sp_shuff(indexp(2*i),:)=response1_Sp_shuff(indexp(2*i-1),:);
-        response1_Sp_shuff(indexp(2*i-1),:)=temp;
-    end
-    
-    for i=1:numel(Orientation_Sn)/2
-        temp=response1_Sn_shuff(indexn(2*i),:);
-        response1_Sn_shuff(indexn(2*i),:)=response1_Sn_shuff(indexn(2*i-1),:);
-        response1_Sn_shuff(indexn(2*i-1),:)=temp;
-    end
+ Index_Sp_Cp=find(Choice_Sp==1);
+ Index_Sp_Cn=find(Choice_Sp==-1);
+ Index_Sn_Cp=find(Choice_Sn==1);
+ Index_Sn_Cn=find(Choice_Sn==-1);
+
+ Orientation_Sp_Cp=Orientation_Sp(Index_Sp_Cp);
+ Orientation_Sp_Cn=Orientation_Sp(Index_Sp_Cn);
+ Orientation_Sn_Cp=Orientation_Sn(Index_Sn_Cp);
+ Orientation_Sn_Cn=Orientation_Sn(Index_Sn_Cn);
+
+ response1_Sp_Cp=response1_Sp(Index_Sp_Cp,:);
+ response1_Sp_Cn=response1_Sp(Index_Sp_Cn,:);
+ response1_Sn_Cp=response1_Sn(Index_Sn_Cp,:);
+ response1_Sn_Cn=response1_Sn(Index_Sn_Cn,:);
+
+ if shuffle==1 % shuffle r given orientation, s and choice
+       
+     [response_shuff_Sp_Cp] = Shuffle_func (Orientation_Sp_Cp,response1_Sp_Cp,shuffle);
+     [response_shuff_Sp_Cn] = Shuffle_func (Orientation_Sp_Cn,response1_Sp_Cn,shuffle);
+     [response_shuff_Sn_Cp] = Shuffle_func (Orientation_Sn_Cp,response1_Sn_Cp,shuffle);
+     [response_shuff_Sn_Cn] = Shuffle_func (Orientation_Sn_Cn,response1_Sn_Cn,shuffle);   
+     response1_Sp_shuff=response1_Sp;
+     response1_Sp_shuff(Index_Sp_Cp,:)=response_shuff_Sp_Cp;
+     response1_Sp_shuff(Index_Sp_Cn,:)=response_shuff_Sp_Cn;
+     response1_Sn_shuff=response1_Sn;
+     response1_Sn_shuff(Index_Sn_Cp,:)=response_shuff_Sn_Cp;
+     response1_Sn_shuff(Index_Sn_Cn,:)=response_shuff_Sn_Cn;
     response1_shuff=[response1_Sp_shuff;response1_Sn_shuff];    
     [R2_square,R2_cross] = rMomentsGenerate_v1_exp (response1,response1_shuff);
     [R1_square_Sp,R1_cross_Sp] = rMomentsGenerate_v1_exp (response1_Sp,response1_Sp_shuff);
     [R1_square_Sn,R1_cross_Sn] = rMomentsGenerate_v1_exp (response1_Sn,response1_Sn_shuff);  
- elseif shuffle==2 % shuffle r given s and n.
-     shufflingtimes=100000;
-     indexp=randi([1 numel(Choice_Sp)],1,shufflingtimes);
-     indexn=randi([1 numel(Choice_Sn)],1,shufflingtimes);
-    response1_Sn_shuff=response1_Sn;
-    response1_Sp_shuff=response1_Sp;
-    for i=1:numel(indexp)/2
-        temp=response1_Sp_shuff(indexp(2*i),:);
-        response1_Sp_shuff(indexp(2*i),:)=response1_Sp_shuff(indexp(2*i-1),:);
-        response1_Sp_shuff(indexp(2*i-1),:)=temp;
-    end    
-    for i=1:numel(indexn)/2
-        temp=response1_Sn_shuff(indexn(2*i),:);
-        response1_Sn_shuff(indexn(2*i),:)=response1_Sn_shuff(indexn(2*i-1),:);
-        response1_Sn_shuff(indexn(2*i-1),:)=temp;
-    end
+ 
+ elseif shuffle==2 % shuffle r given s and choice.
+     [response_shuff_Sp_Cp] = Shuffle_func (Orientation_Sp_Cp,response1_Sp_Cp,shuffle);
+     [response_shuff_Sp_Cn] = Shuffle_func (Orientation_Sp_Cn,response1_Sp_Cn,shuffle);
+     [response_shuff_Sn_Cp] = Shuffle_func (Orientation_Sn_Cp,response1_Sn_Cp,shuffle);
+     [response_shuff_Sn_Cn] = Shuffle_func (Orientation_Sn_Cn,response1_Sn_Cn,shuffle);   
+     response1_Sp_shuff=response1_Sp;
+     response1_Sp_shuff(Index_Sp_Cp,:)=response_shuff_Sp_Cp;
+     response1_Sp_shuff(Index_Sp_Cn,:)=response_shuff_Sp_Cn;
+     response1_Sn_shuff=response1_Sn;
+     response1_Sn_shuff(Index_Sn_Cp,:)=response_shuff_Sn_Cp;
+     response1_Sn_shuff(Index_Sn_Cn,:)=response_shuff_Sn_Cn;
     response1_shuff=[response1_Sp_shuff;response1_Sn_shuff];    
     [R2_square,R2_cross] = rMomentsGenerate_v1_exp (response1,response1_shuff);
     [R1_square_Sp,R1_cross_Sp] = rMomentsGenerate_v1_exp (response1_Sp,response1_Sp_shuff);
     [R1_square_Sn,R1_cross_Sn] = rMomentsGenerate_v1_exp (response1_Sn,response1_Sn_shuff);
+ 
  elseif shuffle==0 % No shuffling
     [R2_square,R2_cross] = rMomentsGenerate_v1_exp (response1,response1);
     [R1_square_Sp,R1_cross_Sp] = rMomentsGenerate_v1_exp (response1_Sp,response1_Sp);
@@ -304,14 +312,26 @@ end
 
 
 function I=I0compute(theta,sigma)
-I=2*erfc(theta/sqrt(2)/sigma)-1;
+    I=2*erfc(theta/sqrt(2)/sigma)-1;
 end
 
 function [slopePCA] = Fitting_cc (ccTheo,ccSim)
-ccdat=[ccTheo;ccSim]';
-coeff = pca(ccdat);
-slopePCA = abs(coeff(1,2) / coeff(1,1));
-
+    ccdat=[ccTheo;ccSim]';
+    coeff = pca(ccdat);
+    slopePCA = abs(coeff(1,2) / coeff(1,1));
 end
         
-
+function [response_shuff] = Shuffle_func (Orientation,response,shuffle)
+    if shuffle==1
+        [~,index]=sort(Orientation);
+    elseif shuffle==2
+         shufflingtimes=100000;
+         index=randi([1 numel(Orientation)],1,shufflingtimes);
+    end
+    response_shuff=response;
+    for i=1:numel(Orientation)/2
+        temp=response_shuff(index(2*i),:);
+        response_shuff(index(2*i),:)=response_shuff(index(2*i-1),:);
+        response_shuff(index(2*i-1),:)=temp;
+    end
+end

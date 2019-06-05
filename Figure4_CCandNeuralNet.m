@@ -1,26 +1,30 @@
+%% This code will generate Figure 4 in the paper: "Revealing nonlinear neural decoding by analyzing choices". 
+%% The neural encoding model is a cubic neural code. 
+%% We can decode the neurons in two ways: Cubic decoding and Neural Network decoding.
+%% The former one, we compute the sufficient statistics from the encoding model and then decode it.
+%% The latter one, we just use feedforward neural-nets to learn the weights and build the decoder.
+%% The we use choice correlation test based on polynomial statistics to analyze the decoding efficiency.
+%% It shows that both networks? computations are consistent with optimal nonlinear decoding (Methods 4.2.2).
+%% even though the networks used different implementations to extract the stimulus information.
+
 clear
 close all
 clc
-%% In this code, we will generate Figure 4 in the paper. 
 %% Basic setting
 n=18; %neuron number
 s0=1;    
 s_range=0.5;
 m=20000;   %sample number
-Amplitude=4; 
-std_train=0.4;
+std_train=0.4;% training data standard deviation
 N_Relu=30;
 gamma=[0.4,0.3,1];
 % Set Global Parameter for rotationMatrix 
 A1=randn(6);
 A=A1-A1'; %Skew-symmetric matrix  
-% Bad Noise
 E1=0; % no bad noise
 DecodingTpye=1;
 % 1: Random expansion, then ReLu, then Linear Regression
 % 2: Random expansion, then tanh, then Linear Regression
-% E1=2.*eye(3); % no bad noise
-
 %% Reference responses and statistics
 sref=s0.*ones(1,m);
 r0 = MixGauBrain_SubGroup (n,m,sref,gamma,A,E1);
@@ -38,18 +42,15 @@ Rbp=Rb( m/2+1:end , :);
 Fb_minus=mean(Rbn,1);
 Fb_plus=mean(Rbp,1);
 fp=(Fb_plus-Fb_minus)./s_range;
-
 %% Decode with Polynomial until cubic statistics
 [sbopt,sopt,~,wopt] = DecodingEngine(R0,Rb,s0,sb);
 FisherInfo=1/var(sopt);
-
 %% Decode with random ReLu basis
 strain=s0+std_train.*randn(1,m);
 rtrain = MixGauBrain_SubGroup (n,m,strain,gamma,A,E1);
 net = feedforwardnet([N_Relu,N_Relu]);
 net.layers{1}.transferFcn = 'poslin'; % Log-sigmoid transfer function
 net.layers{2}.transferFcn = 'poslin'; % Log-sigmoid transfer function
-
 %% Create a neural network estimator.
 net_estimator = neuralnet(net);
 net.divideParam.trainRatio = 70/100;
@@ -58,15 +59,11 @@ net.divideParam.testRatio = 15/100;
 [net, tr] = train(net, rtrain', strain);
 strainhat_Relu = net(rtrain');
 errors = gsubtract(strain, strainhat_Relu);
-% performance = perform(net, targets, outputs)
-
-%%
 shat_Relu=net(r0');
 shat_Relu=shat_Relu';
 FisherInfo=1/var(shat_Relu);
 Info_ratio=FisherInfo/FisherInfo_opt;
-
-% Binary input to estimate d prime and ccTheo
+%% Compute theoretical and experimental CC
 Rbn=Rb( 1:m/2 , :);
 Rbp=Rb( m/2+1:end , :);
 Fb_minus=mean(Rbn,1);
@@ -80,6 +77,7 @@ ccTheo_opt=dpRb./sqrt(FisherInfo_opt)./srange;
 ccTheo1_opt=ccTheo_opt(1:size(Rb1,2));
 ccTheo2_opt=ccTheo_opt(size(Rb1,2)+1:size(Rb1,2)+size(Rb2,2));
 ccTheo3_opt=ccTheo_opt(size(Rb1,2)+size(Rb2,2)+1 : size(Rb1,2)+size(Rb2,2)+size(Rb3,2));
+
 ccSim=corr(shat_Relu,R0);
 ccSim1=ccSim(1:n);
 ccSim2=ccSim(n+1:n+size(R02,2));
@@ -88,7 +86,6 @@ ccSimopt=corr(sopt,R0);
 ccSim1opt=ccSimopt(1:n);
 ccSim2opt=ccSimopt(n+1:n+size(R02,2));
 ccSim3opt=ccSimopt(n+size(R02,2)+1:n+size(R02,2)+size(R03,2));
-
 %% Plot
 plotscale=0.2;
 figure
@@ -122,8 +119,6 @@ set(gca,'linewidth',1,'fontsize',18,'fontname','CMU Serif');
 xlabel('Optimal CC','FontSize',18);
 ylabel('Simulated CC','FontSize',18);
 
-
-
 %% Defined function
 function r_all = MixGauBrain_SubGroup (n,m,s,gamma,A,E1)
 % This function generates m trials of n-d data whose informative moments
@@ -132,6 +127,8 @@ function r_all = MixGauBrain_SubGroup (n,m,s,gamma,A,E1)
 % Can also be adapted to bad noise case.
 % n is neuron number, m is sample number, s is 1 by m vectors. gamma
 % controls moments sensitivity.
+
+% Denote if we want to embed bad noise.
 if E1==0
     s1=s;
     s2=s;
@@ -142,28 +139,20 @@ else
     s2=s+ds(1,:);
     s3=s+ds(1,:);
 end
-
-
 %% Setting
-
 % Linear Setting
 gamma1=gamma(1); % When gamma1 is zero, no linear translation.
-
-
 % Quadratic Setting
 gamma2=gamma(2); % When gamma2 is zero, rotationMatrix is Identity
-
 % Cubic Setting
 binary = permn([-1 1],3);
 va=binary(prod(binary,2)==1,:);% Generate 4 Lobe directions.
 LobeNum=size(va,1);
 gamma3=gamma(3);
-
 %% Sampling
 % In order to have more neurons, we group 6 neurons in a group and do the transformation only
 % within that subgroup. Then we only need (n/6)*6^3 nonlinear units
 r_all=double.empty;
-
 for j=1:n/6
     for i=1:m
         nsub=6;
@@ -178,7 +167,6 @@ for j=1:n/6
     r_all=[r_all,r];
 end
 end
-
 
 
 
@@ -205,9 +193,7 @@ function [M, I] = permn(V, N, K)
 % (c) Jos van der Geest
 % Matlab File Exchange Author ID: 10584
 % email: samelinoa@gmail.com
-
 narginchk(2,3) ;
-
 if fix(N) ~= N || N < 0 || numel(N) ~= 1 ;
     error('permn:negativeN','Second argument should be a positive integer') ;
 end
@@ -262,27 +248,16 @@ end
 function [sbhat,shat,dpRb,wq] = DecodingEngine(R0,Rb,s0,sb)
 m=size(R0,1);
 srange=sb(end)-sb(1);
-
 Rbn=Rb( 1:m/2 , :);
 Rbp=Rb( m/2+1:end , :);
-
 Fb_minus=mean(Rbn,1);
 Fb_plus=mean(Rbp,1);
 fp=(Fb_plus-Fb_minus)./srange;
-
-
 F0=mean(Rb,1);
 Rref=repmat(F0,[m,1]);
-
 wq=pinv(Rb-Rref)*(sb-s0)';
-% 
-% wq=wq./(fp*wq);
-% wq = (Rb-Rref)\(sb-s0)';
 wq=wq./(fp*wq);
-
 shat=(R0-Rref)*wq+s0;
-% FisherInfo=1./var(sq);
 sbhat=(Rb-Rref)*wq+s0;
-
 dpRb=((mean(Rbp,1)-mean(Rbn,1))./(0.5.*(std(Rbp,1,1).^2+std(Rbn,1,1).^2)).^0.5);
 end
