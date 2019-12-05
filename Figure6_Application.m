@@ -15,8 +15,8 @@ end
 %% Filtered fitting plot
 figure
 jj=0;
-for shuffle=0:2
-    for MonkeyNum=1:2 
+for MonkeyNum=1:2 
+    for shuffle=0:2
         jj=jj+1;
         Pointsize=5;
         subplot(2,3,jj)
@@ -280,6 +280,8 @@ response1=[response1_Sp;response1_Sn];
 n=size(response1,2);
 m=size(response1,1);
 
+
+
 %% PsychometricThreshold and estimate CCsim/CCTheo
 BoundarySize=3;
 OrientationMid=-100:BoundarySize:100;
@@ -325,9 +327,11 @@ CCpredRatio=zeta./delta;
         response1_Sn_shuff(indexn(2*i-1),:)=temp;
     end
     response1_shuff=[response1_Sp_shuff;response1_Sn_shuff];    
+    [rmean_Shatn_shuff,rmean_Shatp_shuff] = R_Centralization_decoded(response1_Sn_shuff, response1_Sp_shuff, Stimulus1);
+    [rmean_Shatn,rmean_Shatp] = R_Centralization_decoded(response1_Sn, response1_Sp, Stimulus1);
     [R2_square,R2_cross] = rMomentsGenerate_v1_exp (response1,response1_shuff);
-    [R1_square_Sp,R1_cross_Sp] = rMomentsGenerate_v1_exp (response1_Sp,response1_Sp_shuff);
-    [R1_square_Sn,R1_cross_Sn] = rMomentsGenerate_v1_exp (response1_Sn,response1_Sn_shuff);  
+    [R1_square_Sp,R1_cross_Sp] = rMomentsGenerate_v1_centra (response1_Sp,response1_Sp_shuff,rmean_Shatp,rmean_Shatp_shuff);
+    [R1_square_Sn,R1_cross_Sn] = rMomentsGenerate_v1_centra (response1_Sn,response1_Sn_shuff,rmean_Shatn,rmean_Shatn_shuff);
  elseif shuffle==2 % shuffle r given s and n.
      shufflingtimes=100000;
      indexp=randi([1 numel(Choice_Sp)],1,shufflingtimes);
@@ -344,14 +348,19 @@ CCpredRatio=zeta./delta;
         response1_Sn_shuff(indexn(2*i),:)=response1_Sn_shuff(indexn(2*i-1),:);
         response1_Sn_shuff(indexn(2*i-1),:)=temp;
     end
-    response1_shuff=[response1_Sp_shuff;response1_Sn_shuff];    
+    response1_shuff=[response1_Sp_shuff;response1_Sn_shuff];
+    [rmean_Shatn_shuff,rmean_Shatp_shuff] = R_Centralization_decoded(response1_Sn_shuff, response1_Sp_shuff, Stimulus1);
+    [rmean_Shatn,rmean_Shatp] = R_Centralization_decoded(response1_Sn, response1_Sp, Stimulus1);
     [R2_square,R2_cross] = rMomentsGenerate_v1_exp (response1,response1_shuff);
-    [R1_square_Sp,R1_cross_Sp] = rMomentsGenerate_v1_exp (response1_Sp,response1_Sp_shuff);
-    [R1_square_Sn,R1_cross_Sn] = rMomentsGenerate_v1_exp (response1_Sn,response1_Sn_shuff);
+    [R1_square_Sp,R1_cross_Sp] = rMomentsGenerate_v1_centra (response1_Sp,response1_Sp_shuff,rmean_Shatp,rmean_Shatp_shuff);
+    [R1_square_Sn,R1_cross_Sn] = rMomentsGenerate_v1_centra (response1_Sn,response1_Sn_shuff,rmean_Shatn,rmean_Shatn_shuff);
  elseif shuffle==0 % No shuffling
+    [rmean_Shatn,rmean_Shatp] = R_Centralization_decoded(response1_Sn, response1_Sp, Stimulus1);
     [R2_square,R2_cross] = rMomentsGenerate_v1_exp (response1,response1);
-    [R1_square_Sp,R1_cross_Sp] = rMomentsGenerate_v1_exp (response1_Sp,response1_Sp);
-    [R1_square_Sn,R1_cross_Sn] = rMomentsGenerate_v1_exp (response1_Sn,response1_Sn);
+    [R1_square_Sp,R1_cross_Sp] = rMomentsGenerate_v1_centra (response1_Sp,response1_Sp, rmean_Shatp,rmean_Shatp);
+    [R1_square_Sn,R1_cross_Sn] = rMomentsGenerate_v1_centra (response1_Sn,response1_Sn, rmean_Shatn,rmean_Shatn);
+    
+    
  end
 
 %% Compute cctheo and ccsim
@@ -520,9 +529,10 @@ m=size(response1,1);
         response1_Sn_shuff(indexn(2*i),:)=response1_Sn_shuff(indexn(2*i-1),:);
         response1_Sn_shuff(indexn(2*i-1),:)=temp;
     end
-    response1_shuff=[response1_Sp_shuff;response1_Sn_shuff];    
-    [R1_square_Sp,R1_cross_Sp] = rMomentsGenerate_v1_exp (response1_Sp,response1_Sp_shuff);
-    [R1_square_Sn,R1_cross_Sn] = rMomentsGenerate_v1_exp (response1_Sn,response1_Sn_shuff);  
+    [rmean_Shatn_shuff,rmean_Shatp_shuff] = R_Centralization_decoded(response1_Sn_shuff, response1_Sp_shuff, Stimulus1);
+    [rmean_Shatn,rmean_Shatp] = R_Centralization_decoded(response1_Sn, response1_Sp, Stimulus1);
+    [R1_square_Sp,R1_cross_Sp] = rMomentsGenerate_v1_centra (response1_Sp,response1_Sp_shuff,rmean_Shatp,rmean_Shatp_shuff);
+    [R1_square_Sn,R1_cross_Sn] = rMomentsGenerate_v1_centra (response1_Sn,response1_Sn_shuff,rmean_Shatn,rmean_Shatn_shuff);
  elseif shuffle==2 % shuffle r given s and n.
      shufflingtimes=100000;
      indexp=randi([1 numel(Choice_Sp)],1,shufflingtimes);
@@ -539,12 +549,17 @@ m=size(response1,1);
         response1_Sn_shuff(indexn(2*i),:)=response1_Sn_shuff(indexn(2*i-1),:);
         response1_Sn_shuff(indexn(2*i-1),:)=temp;
     end
-    response1_shuff=[response1_Sp_shuff;response1_Sn_shuff];    
-    [R1_square_Sp,R1_cross_Sp] = rMomentsGenerate_v1_exp (response1_Sp,response1_Sp_shuff);
-    [R1_square_Sn,R1_cross_Sn] = rMomentsGenerate_v1_exp (response1_Sn,response1_Sn_shuff);
+    [rmean_Shatn_shuff,rmean_Shatp_shuff] = R_Centralization_decoded(response1_Sn_shuff, response1_Sp_shuff, Stimulus1);
+    [rmean_Shatn,rmean_Shatp] = R_Centralization_decoded(response1_Sn, response1_Sp, Stimulus1);
+    [R1_square_Sp,R1_cross_Sp] = rMomentsGenerate_v1_centra (response1_Sp,response1_Sp_shuff,rmean_Shatp,rmean_Shatp_shuff);
+    [R1_square_Sn,R1_cross_Sn] = rMomentsGenerate_v1_centra (response1_Sn,response1_Sn_shuff,rmean_Shatn,rmean_Shatn_shuff);
+
+    
  elseif shuffle==0 % No shuffling
-    [R1_square_Sp,R1_cross_Sp] = rMomentsGenerate_v1_exp (response1_Sp,response1_Sp);
-    [R1_square_Sn,R1_cross_Sn] = rMomentsGenerate_v1_exp (response1_Sn,response1_Sn);
+    [rmean_Shatn,rmean_Shatp] = R_Centralization_decoded(response1_Sn, response1_Sp, Stimulus1);
+    [R1_square_Sp,R1_cross_Sp] = rMomentsGenerate_v1_centra (response1_Sp,response1_Sp, rmean_Shatp,rmean_Shatp);
+    [R1_square_Sn,R1_cross_Sn] = rMomentsGenerate_v1_centra (response1_Sn,response1_Sn, rmean_Shatn,rmean_Shatn);
+
  end
 
 %% Compute coarse-discrimination CC
@@ -562,26 +577,43 @@ for j=1:size(R_all_Sn,2)
 end
 end
 %%
-
-function [R2_square,R2_cross] = rMomentsGenerate_v1_exp (r1,r2)
-m = size(r1,1);
-n = size(r1,2);
-rmean1=repmat(mean(r1,1),m,1);
-rmean2=repmat(mean(r2,1),m,1);
-z1=r1-rmean1;
-z2=r2-rmean2;
-k=0;
-for i=1:n
-        k=k+1;
-        R2_square(:,k)=z1(:,i).*z2(:,i);
-end
-k=0;
-for i=1:n
-    for j=i+1:n
-        k=k+1;
-        R2_cross(:,k)=z1(:,i).*z2(:,j);
+function [R2_square,R2_cross] = rMomentsGenerate_v1_centra (r1,r2,rmean1,rmean2)
+    n = size(r1,2);
+    z1=r1-rmean1;
+    z2=r2-rmean2;
+    k=0;
+    for i=1:n
+            k=k+1;
+            R2_square(:,k)=z1(:,i).*z2(:,i);
+    end
+    k=0;
+    for i=1:n
+        for j=i+1:n
+            k=k+1;
+            R2_cross(:,k)=z1(:,i).*z2(:,j);
+        end
     end
 end
+
+function [R2_square,R2_cross] = rMomentsGenerate_v1_exp (r1,r2)
+    m = size(r1,1);
+    n = size(r1,2);
+    rmean1=repmat(mean(r1,1),m,1);
+    rmean2=repmat(mean(r2,1),m,1);
+    z1=r1-rmean1;
+    z2=r2-rmean2;
+    k=0;
+    for i=1:n
+            k=k+1;
+            R2_square(:,k)=z1(:,i).*z2(:,i);
+    end
+    k=0;
+    for i=1:n
+        for j=i+1:n
+            k=k+1;
+            R2_cross(:,k)=z1(:,i).*z2(:,j);
+        end
+    end
 end
 
 
@@ -601,5 +633,29 @@ function pComb=pValueSepToComb(px,py)
     pComb=0.5.*erfc(-sqrt((erfcinv(2.*px)).^2+(erfcinv(2.*py)).^2));
 end
 
+
+%% Estimate Stimulus from linear response, use that to centralize the r to get deltar
+function [rmean_Shatn,rmean_Shatp] = R_Centralization_decoded(response1_Sn, response1_Sp, Stimulus1)
+    mp=sum(Stimulus1(:) == 1)   ;
+    mn=sum(Stimulus1(:) == -1)   ;
+    m=mp+mn;
+    Fb_Sn=mean(response1_Sn,1);
+    Fb_Sp=mean(response1_Sp,1);
+    response1=[response1_Sp;response1_Sn];
+    srange=2;
+    fp=(Fb_Sp-Fb_Sn)./srange;
+    F0=mean(response1,1);
+    Rref=repmat(F0,[m,1]);
+    wq=pinv(response1-Rref)*Stimulus1;
+    wq=wq./(fp*wq);
+    shat_1=(response1-Rref)*wq;
+    Stimulus_est_linear=((shat_1>0)-0.5).*2;
+
+    response1_Shatn=response1(Stimulus_est_linear==-1,:);
+    response1_Shatp=response1(Stimulus_est_linear==1,:);
+
+    rmean_Shatn=repmat(mean(response1_Shatn,1),mn,1);
+    rmean_Shatp=repmat(mean(response1_Shatp,1),mp,1);
+end
 
 
