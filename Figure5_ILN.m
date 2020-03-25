@@ -26,10 +26,6 @@ isig=inv(sig);
 %% Generate neural responses and quadratic elements.
 u=zeros(1,n);
 r=mvnrnd(u,sig,m);
-F0=zeros(n*(n+1)/2,1);
-F0b=zeros(n*(n+1)/2,1);
-Fp=zeros(n*(n+1)/2,1);
-R=zeros(m,n*(n+1)/2);
 ij=0;
 for i=1:n
     for j=1:i
@@ -58,8 +54,8 @@ for i = 1:n
 end
 gamma0 = (gamma0+gamma0')/2.; % enforce symmetry
 igamma0=inv(gamma0);
-J0=Fp'*igamma0*Fp; %Fisher information
-epsilon = 10./J0; % Amplitude of bad noise
+J0=Fp*igamma0*Fp'; %Fisher information
+epsilon = 4./J0; % Amplitude of bad noise
 J = 1/(1/J0 + epsilon);
 ds=sqrt(epsilon).*randn(1,m); % bad noise
 s=s0+ds;
@@ -72,30 +68,50 @@ for i=1:n
     end
 end
 
-wopt=igamma0*Fp./J0; % The optimal weights
+wopt=igamma0*Fp'./J0; % The optimal weights
 woptb=wopt; % The bad noise doesn't change the weights direction
-wsub = sign(Fp);% suboptimal decoding: blind to the correlation
+wsub = sign(Fp');% suboptimal decoding: blind to the correlation
+wsub=wsub./(Fp*wsub);
+randsign = (binornd(1,0.6,numel(wopt),1)-0.5)*2;
+wsubest = randsign.*sign(Fp');% suboptimal decoding: blind to the correlation
+wsubest=wsubest./(Fp*wsubest);
 
-shopt=wopt'*(R'-repmat(F0,[1,m])) + s0;
-shsub=wsub'*(R'-repmat(F0,[1,m])) + s0;
-shoptb=woptb'*(Rb'-repmat(F0,[1,m])) + s0;
-shsubb=wsub'*(Rb'-repmat(F0,[1,m])) + s0;
+shopt=(R-repmat(F0,[m,1]))*wopt + s0;
+shsub=(R-repmat(F0,[m,1]))*wsub + s0;
+shsubest=(R-repmat(F0,[m,1]))*wsubest + s0;
+
+FI_opt=1./var(shopt);
+FI_sub=1./var(shsub);
+FI_subest=1./var(shsubest);
+
+shoptb=(Rb-repmat(F0,[m,1]))*woptb + s0;
+shsubb=(Rb-repmat(F0,[m,1]))*wsub + s0;
+shsubestb=(Rb-repmat(F0,[m,1]))*wsubest + s0;
+
+FI_opt_bad=1./var(shoptb);
+FI_sub_bad=1./var(shsubb);
+FI_subest_bad=1./var(shsubestb);
+
+FI_sub/FI_opt
+FI_subest/FI_opt
+
+FI_sub_bad/FI_opt_bad
+FI_subest_bad/FI_opt_bad
+
 
 %% Compute choice correlation under different conditions.
-Coptpred=zeros(n*(n+1)/2,1);
-Coptbpred=zeros(n*(n+1)/2,1);
-Coptsim=zeros(n*(n+1)/2,1);
-Csubsim=zeros(n*(n+1)/2,1);
-Coptbsim=zeros(n*(n+1)/2,1);
-Csubbsim=zeros(n*(n+1)/2,1);
 ij=0;
 for i=1:n
     for j=1:i
         ij=ij+1;
-        Coptsim(ij) = corr(shopt',R(:,ij));
-        Csubsim(ij) = corr(shsub',R(:,ij));
-        Coptbsim(ij) = corr(shoptb',Rb(:,ij));
-        Csubbsim(ij) = corr(shsubb',Rb(:,ij));
+        Coptsim(ij) = corr(shopt,R(:,ij));
+        Csubsim(ij) = corr(shsub,R(:,ij));
+        Csubestsim(ij) = corr(shsubest,R(:,ij)); 
+       
+        Coptbsim(ij) = corr(shoptb,Rb(:,ij));
+        Csubbsim(ij) = corr(shsubb,Rb(:,ij));
+        Csubestbsim(ij) = corr(shsubestb,Rb(:,ij));
+        
         Coptpred(ij) = Fp(ij)/sqrt(gamma0(ij,ij)) / sqrt(J0);
         Coptbpred(ij) = (Fp(ij)/sqrt(epsilon*Fp(ij)^2+gamma0(ij,ij)))/sqrt(J);
     end
@@ -104,17 +120,41 @@ end
 %% Plotting
 figure;
 subplot(1,2,1);
-plot(sign(Fp).*Coptpred,  sign(Fp).*Csubsim,'r.');hold on;
-plot(sign(Fp).*Coptpred,  sign(Fp).*Coptsim,'b.',[0,0.25],[0,0.25],'k-');hold on;
+plot(abs(Coptpred),  abs(Csubsim),'r.');hold on;
+plot(abs(Coptpred),  abs(Csubestsim),'g.');hold on;
+plot(abs(Coptpred),  abs(Coptsim),'b.');hold on;
+
+[slope_sub,RSS_sub] = fit_and_rsqure(Csubsim,Coptpred)
+[slope_subest,RSS_subest] = fit_and_rsqure(Csubestsim,Coptpred)
+[slope_opt,RSS_opt] = fit_and_rsqure(Coptsim,Coptpred)
+
+plot([0,0.25],[0,0.25],'k-');
 axis equal;
 title('Extensive information','FontSize',10);
 xlabel('Optimal CC');
 ylabel('Simulated CC');
-legend('Suboptimal','Optimal');
+% legend('Optimal','Suboptimal','worse Suboptimal');
 axis([0,0.25,0,0.25]);
 
 subplot(1,2,2);
-plot(sign(Fp).*Coptbpred,sign(Fp).*Coptbsim,'b.',sign(Fp).*Coptbpred,sign(Fp).*Csubbsim,'r.',[0,0.6],[0,0.6],'k-');
+plot(abs(Coptbpred),  abs(Csubbsim),'r.');hold on;
+plot(abs(Coptbpred),  abs(Csubestbsim),'g.');hold on;
+plot(abs(Coptbpred),  abs(Coptbsim),'b.');hold on;
+
+[slope_sub_bad,RSS_sub_bad] = fit_and_rsqure(Csubbsim,Coptbpred)
+[slope_subest_bad,RSS_subest_bad] = fit_and_rsqure(Csubestbsim,Coptbpred)
+[slope_opt_bad,RSS_opt_bad] = fit_and_rsqure(Coptbsim,Coptbpred)
+
+plot([0,0.6],[0,0.6],'k-');
 axis equal
 title('Limited information','FontSize',10);
 axis([0,0.6,0,0.6]);
+
+function [slope,Rsq] = fit_and_rsqure(CCsim,CCtheo)
+
+[slope] = (abs(CCtheo))' \abs(CCsim)';
+CCsim_pred = CCtheo*slope;
+Rsq = sum((CCsim - CCsim_pred).^2);
+
+
+end

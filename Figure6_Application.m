@@ -5,9 +5,9 @@ close all
 for shuffle=0:2
     for MonkeyNum=1:2
         [ccTheo2_cross_F{shuffle+1,MonkeyNum},ccSim2_cross_F{shuffle+1,MonkeyNum},ccTheo2_square_F{shuffle+1,MonkeyNum},ccSim2_square_F{shuffle+1,MonkeyNum},ccTheo1_F{shuffle+1,MonkeyNum},ccSim1_F{shuffle+1,MonkeyNum},pSignificant_Theo1_F{shuffle+1,MonkeyNum},pSignificant_Theo2sq_F{shuffle+1,MonkeyNum},pSignificant_Theo2cr_F{shuffle+1,MonkeyNum},pSignificant_Sim1_F{shuffle+1,MonkeyNum},pSignificant_Sim2sq_F{shuffle+1,MonkeyNum},pSignificant_Sim2cr_F{shuffle+1,MonkeyNum}] = ccComputeCombined (MonkeyNum,shuffle);
-        pSignificant_1_Comb{shuffle+1,MonkeyNum}=pValueSepToComb(pSignificant_Theo1_F{shuffle+1,MonkeyNum},pSignificant_Sim1_F{shuffle+1,MonkeyNum});
-        pSignificant_sq_Comb{shuffle+1,MonkeyNum}=pValueSepToComb(pSignificant_Theo2sq_F{shuffle+1,MonkeyNum},pSignificant_Sim2sq_F{shuffle+1,MonkeyNum});
-        pSignificant_cross_Comb{shuffle+1,MonkeyNum}=pValueSepToComb(pSignificant_Theo2cr_F{shuffle+1,MonkeyNum},pSignificant_Sim2cr_F{shuffle+1,MonkeyNum});
+%         pSignificant_1_Comb{shuffle+1,MonkeyNum}=pValueSepToComb(pSignificant_Theo1_F{shuffle+1,MonkeyNum},pSignificant_Sim1_F{shuffle+1,MonkeyNum});
+%         pSignificant_sq_Comb{shuffle+1,MonkeyNum}=pValueSepToComb(pSignificant_Theo2sq_F{shuffle+1,MonkeyNum},pSignificant_Sim2sq_F{shuffle+1,MonkeyNum});
+%         pSignificant_cross_Comb{shuffle+1,MonkeyNum}=pValueSepToComb(pSignificant_Theo2cr_F{shuffle+1,MonkeyNum},pSignificant_Sim2cr_F{shuffle+1,MonkeyNum});
     end
 end
 
@@ -15,7 +15,7 @@ end
 %% Filtered fitting plot
 figure
 jj=0;
-for MonkeyNum=1:2 
+for MonkeyNum=1:2
     for shuffle=0:2
         jj=jj+1;
         Pointsize=5;
@@ -52,10 +52,9 @@ end
 
 %%
 
-fname = sprintf('CC_test_AllData.mat');
-save(fname,'pSignificant_1_Comb','pSignificant_sq_Comb','pSignificant_cross_Comb','pSignificant_Theo1_F','pSignificant_Theo2sq_F','pSignificant_Theo2cr_F','pSignificant_Sim1_F','pSignificant_Sim2sq_F','pSignificant_Sim2cr_F','ccSim1_F','ccSim2_cross_F','ccSim2_square_F','ccTheo1_F','ccTheo2_cross_F','ccTheo2_square_F','slope_fit1_F','slope_fit2_cross_F','slope_fit2_square_F');
-
-save('CC_test_PlotsAndData.mat');
+% fname = sprintf('CC_test_AllData.mat');
+% save(fname,'pSignificant_1_Comb','pSignificant_sq_Comb','pSignificant_cross_Comb','pSignificant_Theo1_F','pSignificant_Theo2sq_F','pSignificant_Theo2cr_F','pSignificant_Sim1_F','pSignificant_Sim2sq_F','pSignificant_Sim2cr_F','ccSim1_F','ccSim2_cross_F','ccSim2_square_F','ccTheo1_F','ccTheo2_cross_F','ccTheo2_square_F','slope_fit1_F','slope_fit2_cross_F','slope_fit2_square_F');
+save('CC_test_LargestContrast.mat');
 
 
 function [ccTheo2_cross_F,ccSim2_cross_F,ccTheo2_square_F,ccSim2_square_F,ccTheo1_F,ccSim1_F,pSignificant_Theo1_F,pSignificant_Theo2sq_F,pSignificant_Theo2cr_F,pSignificant_Sim1_F,pSignificant_Sim2sq_F,pSignificant_Sim2cr_F] = ccComputeCombined (MonkeyNum,shuffle)
@@ -67,7 +66,7 @@ else
     load('monkey2.mat');
 end
 MonkeySessionList=[1:SessionTotalNum];
-contrastAll=0; % flag to denote if we want to pick the all the contrasts or just the highest contrast.
+contrastAll=1; % flag to denote if we want to pick the all the contrasts or just the highest contrast.
 %% Compute Theo and experimental CCs for each session
 for SelectedSession=1:SessionTotalNum   
     SelectedSession
@@ -78,7 +77,7 @@ for SelectedSession=1:SessionTotalNum
     end
     %% Find same contrast  
     Contrast=SessionData.contrast;
-    Union_Contrast=unique(Contrast);
+    Union_Contrast=unique(Contrast)
     if contrastAll==1
         Index_SelectContrast=Contrast==Contrast;
     else
@@ -221,7 +220,7 @@ end
 function [ccTheo1BS,ccTheo2_squareBS,ccTheo2_crossBS,ccSim1BS,ccSim2_squareBS,ccSim2_crossBS] = ccSignificance (Stimulus1,Choice1,Orientation1,response1,shuffle,sT,sp,sn)
      %% Compute the null distribution
      n=size(response1,2);
-     Bootstrap_Times=100;
+     Bootstrap_Times=1;
     for kk=1 : Bootstrap_Times
         % Compute ccTheo shuffled to estimate the shuffled distribution
         % parameters
@@ -622,8 +621,8 @@ I=2*erfc(theta/sqrt(2)/sigma)-1;
 end
 
 function [slopePCA] = Fitting_cc (ccTheo,ccSim)
-ccdat=[ccTheo;ccSim]';
-coeff = pca(ccdat);
+ccdat=[ccTheo;ccSim];
+coeff = pca(ccdat,2);
 slopePCA = abs(coeff(1,2) / coeff(1,1));
 
 end
