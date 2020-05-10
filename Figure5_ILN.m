@@ -99,6 +99,14 @@ FI_sub_bad/FI_opt_bad
 FI_subest_bad/FI_opt_bad
 
 
+figure
+subplot(1,2,1);
+bar([FI_opt,FI_sub,FI_subest]);
+axis square;
+subplot(1,2,2);
+bar([FI_opt_bad,FI_sub_bad,FI_subest_bad]);
+axis square;
+
 %% Compute choice correlation under different conditions.
 ij=0;
 for i=1:n
