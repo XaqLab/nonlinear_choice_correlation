@@ -2,12 +2,16 @@ clc
 clear
 close all
 
-for shuffle=0:0
+for shuffle=0:2
     for MonkeyNum=1:2
-        [ccTheo2_cross_F{shuffle+1,MonkeyNum},ccSim2_cross_F{shuffle+1,MonkeyNum},ccTheo2_square_F{shuffle+1,MonkeyNum},ccSim2_square_F{shuffle+1,MonkeyNum},ccTheo1_F{shuffle+1,MonkeyNum},ccSim1_F{shuffle+1,MonkeyNum},pSignificant_Theo1_F{shuffle+1,MonkeyNum},pSignificant_Theo2sq_F{shuffle+1,MonkeyNum},pSignificant_Theo2cr_F{shuffle+1,MonkeyNum},pSignificant_Sim1_F{shuffle+1,MonkeyNum},pSignificant_Sim2sq_F{shuffle+1,MonkeyNum},pSignificant_Sim2cr_F{shuffle+1,MonkeyNum},slope_fit{shuffle+1,MonkeyNum},Rsquared{shuffle+1,MonkeyNum}] = ccComputeCombined (MonkeyNum,shuffle);
+%         [ccTheo2_cross_F{shuffle+1,MonkeyNum},ccSim2_cross_F{shuffle+1,MonkeyNum},ccTheo2_square_F{shuffle+1,MonkeyNum},ccSim2_square_F{shuffle+1,MonkeyNum},ccTheo1_F{shuffle+1,MonkeyNum},ccSim1_F{shuffle+1,MonkeyNum},pSignificant_Theo1_F{shuffle+1,MonkeyNum},pSignificant_Theo2sq_F{shuffle+1,MonkeyNum},pSignificant_Theo2cr_F{shuffle+1,MonkeyNum},pSignificant_Sim1_F{shuffle+1,MonkeyNum},pSignificant_Sim2sq_F{shuffle+1,MonkeyNum},pSignificant_Sim2cr_F{shuffle+1,MonkeyNum}] = ccComputeCombined (MonkeyNum,shuffle);
 %         pSignificant_1_Comb{shuffle+1,MonkeyNum}=pValueSepToComb(pSignificant_Theo1_F{shuffle+1,MonkeyNum},pSignificant_Sim1_F{shuffle+1,MonkeyNum});
 %         pSignificant_sq_Comb{shuffle+1,MonkeyNum}=pValueSepToComb(pSignificant_Theo2sq_F{shuffle+1,MonkeyNum},pSignificant_Sim2sq_F{shuffle+1,MonkeyNum});
 %         pSignificant_cross_Comb{shuffle+1,MonkeyNum}=pValueSepToComb(pSignificant_Theo2cr_F{shuffle+1,MonkeyNum},pSignificant_Sim2cr_F{shuffle+1,MonkeyNum});
+
+        corcor_cross(shuffle+1,MonkeyNum)=corr(ccTheo2_cross_F{shuffle+1,MonkeyNum}',ccSim2_cross_F{shuffle+1,MonkeyNum}');
+        corcor_square(shuffle+1,MonkeyNum)=corr(ccTheo2_square_F{shuffle+1,MonkeyNum}',ccSim2_square_F{shuffle+1,MonkeyNum}');
+        corcor_1(shuffle+1,MonkeyNum)=corr(ccTheo1_F{shuffle+1,MonkeyNum}',ccSim1_F{shuffle+1,MonkeyNum}');
     end
 end
 
@@ -16,28 +20,19 @@ end
 figure
 jj=0;
 for MonkeyNum=1:2
-    for shuffle=0:0
+    for shuffle=0:2
         jj=jj+1;
         Pointsize=5;
         subplot(2,3,jj)
         plot(ccTheo2_cross_F{shuffle+1,MonkeyNum},ccSim2_cross_F{shuffle+1,MonkeyNum},'r.','markersize', 1);hold on;
         plot(ccTheo1_F{shuffle+1,MonkeyNum},ccSim1_F{shuffle+1,MonkeyNum},'b.','markersize', 1);hold on;
         plot(ccTheo2_square_F{shuffle+1,MonkeyNum},ccSim2_square_F{shuffle+1,MonkeyNum},'g.','markersize', 1);hold on;
-        [slope_fit1_All{shuffle+1,MonkeyNum}] = Fitting_cc (ccTheo1_F{shuffle+1,MonkeyNum},ccSim1_F{shuffle+1,MonkeyNum});
-        [slope_fit2_cross_All{shuffle+1,MonkeyNum}] = Fitting_cc (ccTheo2_cross_F{shuffle+1,MonkeyNum},ccSim2_cross_F{shuffle+1,MonkeyNum});
-        [slope_fit2_square_All{shuffle+1,MonkeyNum}] = Fitting_cc (ccTheo2_square_F{shuffle+1,MonkeyNum},ccSim2_square_F{shuffle+1,MonkeyNum});
-        ccSim2_cross_est= slope_fit2_cross_All{shuffle+1,MonkeyNum}.*ccTheo2_cross_F{shuffle+1,MonkeyNum};
-        ccSim1_est= slope_fit1_All{shuffle+1,MonkeyNum}.*ccTheo1_F{shuffle+1,MonkeyNum};
-        ccSim2_square_est= slope_fit2_square_All{shuffle+1,MonkeyNum}.*ccTheo2_square_F{shuffle+1,MonkeyNum};        
-        Rsquare_cross{shuffle+1,MonkeyNum}= roundn(calculateR2(ccSim2_cross_F{shuffle+1,MonkeyNum},ccSim2_cross_est),-2);
-        Rsquare_square{shuffle+1,MonkeyNum}= roundn(calculateR2(ccSim2_square_F{shuffle+1,MonkeyNum},ccSim2_square_est),-2);
-        Rsquare_1{shuffle+1,MonkeyNum}= roundn(calculateR2(ccSim1_F{shuffle+1,MonkeyNum},ccSim1_est),-2);
-
-        
-        
-        plot([-1,1],slope_fit1_All{shuffle+1,MonkeyNum}.*[-1,1],'b-','markersize', 6);hold on;
-        plot([-1,1],slope_fit2_cross_All{shuffle+1,MonkeyNum}.*[-1,1],'r-','markersize', 6);hold on;
-        plot([-1,1],slope_fit2_square_All{shuffle+1,MonkeyNum}.*[-1,1],'g-','markersize', 6);hold on;
+        [slope_fit1_F{shuffle+1,MonkeyNum}] = Fitting_cc (ccTheo1_F{shuffle+1,MonkeyNum},ccSim1_F{shuffle+1,MonkeyNum});
+        [slope_fit2_cross_F{shuffle+1,MonkeyNum}] = Fitting_cc (ccTheo2_cross_F{shuffle+1,MonkeyNum},ccSim2_cross_F{shuffle+1,MonkeyNum});
+        [slope_fit2_square_F{shuffle+1,MonkeyNum}] = Fitting_cc (ccTheo2_square_F{shuffle+1,MonkeyNum},ccSim2_square_F{shuffle+1,MonkeyNum});
+        plot([-1,1],slope_fit1_F{shuffle+1,MonkeyNum}.*[-1,1],'b-','markersize', 6);hold on;
+        plot([-1,1],slope_fit2_cross_F{shuffle+1,MonkeyNum}.*[-1,1],'r-','markersize', 6);hold on;
+        plot([-1,1],slope_fit2_square_F{shuffle+1,MonkeyNum}.*[-1,1],'g-','markersize', 6);hold on;
         plot([-1,1],[-1,1] ,'k-','markersize', 6);hold on;
         axis square;
         set(gca,'XTick',[-1,1]);
@@ -58,58 +53,108 @@ for MonkeyNum=1:2
         end
     end
 end
-
-
-
-slope_M1=slope_fit{1,1};
-slope_M2=slope_fit{1,2};
-Rsquared_M1=Rsquared{1,1};
-Rsquared_M2=Rsquared{1,2};
-
-
-
-
+% 
 figure
-histogram(slope_M1(Rsquared_M1>0),'Normalization','probability','BinWidth',0.1); hold on;
-histogram(slope_M2(Rsquared_M2>0),'Normalization','probability','BinWidth',0.1); hold on;
-axis([0,1.5,0,inf])
-legend('Monkey 1','Monkey 2');
-xlabel('slope')
-ylabel('probability')
+jj=0;
+for MonkeyNum=1:2
+    for shuffle=0:2
+        jj=jj+1;
+        Pointsize=5;
+        subplot(2,3,jj)
+        plot([-1,1],slope_fit1_F{shuffle+1,MonkeyNum}.*[-1,1],'b-','markersize', 6);hold on;
+        plot([-1,1],slope_fit2_cross_F{shuffle+1,MonkeyNum}.*[-1,1],'r-','markersize', 6);hold on;
+        plot([-1,1],slope_fit2_square_F{shuffle+1,MonkeyNum}.*[-1,1],'g-','markersize', 6);hold on;
+        axis square;
+        set(gca,'XTick',[-1,1]);
+        set(gca,'YTick',[-1,1]);
+        set(gca,'Yticklabel',[-1,1]);
+        set(gca,'Xticklabel',[-1,1]);
+        axis([-1 1 -1 1]);
+    end
+end
 
-[~,p12] = ttest2(slope_M1(Rsquared_M1>0),slope_M2(Rsquared_M2>0))
-[~,p1] = ttest(slope_M1(Rsquared_M1>0),1)
-[~,p2] = ttest(slope_M2(Rsquared_M2>0),1)
 
+% 
+figure
+jj=0;
+for MonkeyNum=1:2
+    for shuffle=0:2
+        jj=jj+1;
+        Pointsize=5;
+        subplot(2,3,jj)
+        plot(ccTheo2_cross_F{shuffle+1,MonkeyNum},ccSim2_cross_F{shuffle+1,MonkeyNum},'r.','markersize', 1);hold on;
+        plot(ccTheo1_F{shuffle+1,MonkeyNum},ccSim1_F{shuffle+1,MonkeyNum},'b.','markersize', 1);hold on;
+        plot(ccTheo2_square_F{shuffle+1,MonkeyNum},ccSim2_square_F{shuffle+1,MonkeyNum},'g.','markersize', 1);hold on;
+        axis square;
+        set(gca,'XTick',[-1,1]);
+        set(gca,'YTick',[-1,1]);
+        set(gca,'Yticklabel',[-1,1]);
+        set(gca,'Xticklabel',[-1,1]);
+        axis([-1 1 -1 1]);
+    end
+end
 
 %%
 
-% fname = sprintf('CC_test_AllData.mat');
-% save(fname,'pSignificant_1_Comb','pSignificant_sq_Comb','pSignificant_cross_Comb','pSignificant_Theo1_F','pSignificant_Theo2sq_F','pSignificant_Theo2cr_F','pSignificant_Sim1_F','pSignificant_Sim2sq_F','pSignificant_Sim2cr_F','ccSim1_F','ccSim2_cross_F','ccSim2_square_F','ccTheo1_F','ccTheo2_cross_F','ccTheo2_square_F','slope_fit1_F','slope_fit2_cross_F','slope_fit2_square_F');
-% save('CC_test_LargestContrast.mat');
-% load('CC_test_AllData.mat');
+fname = sprintf('P-value-CC_test_FilterredData.mat');
+save(fname,'pSignificant_Theo1_F','pSignificant_Theo2sq_F','pSignificant_Theo2cr_F','pSignificant_Sim1_F','pSignificant_Sim2sq_F','pSignificant_Sim2cr_F','ccSim1_F','ccSim2_cross_F','ccSim2_square_F','ccTheo1_F','ccTheo2_cross_F','ccTheo2_square_F','slope_fit1_F','slope_fit2_cross_F','slope_fit2_square_F');
+load('CC_test_Conditioned_Data.mat');
+load('CC_test_AllData.mat')
+
+%% Compute significantly tuned ratio
+load('CC_test_Conditioned_Data.mat');
+
+load('CC_test_AllData.mat')
+
+load('CC_test_Conditioned_Data.mat');
+
+load('CC_test_AllData.mat')
+
+load('CC_test_Conditioned_Data.mat');
+ccthreshold=0.1;
+pthreshold=0.001;
+
+sum(ccSim1_F{1,1}>ccthreshold&pSignificant_Sim1_F{1,1}<pthreshold)./numel(pSignificant_Sim1_F{1,1})
+sum(ccSim1_F{1,2}>ccthreshold&pSignificant_Sim1_F{1,2}<pthreshold)./numel(pSignificant_Sim1_F{1,2})
+
+sum(ccSim2_square_F{1,1}>ccthreshold&pSignificant_Sim2sq_F{1,1}<pthreshold)./numel(pSignificant_Sim2sq_F{1,1})
+sum(ccSim2_square_F{1,2}>ccthreshold&pSignificant_Sim2sq_F{1,2}<pthreshold)./numel(pSignificant_Sim2sq_F{1,2})
+
+sum(ccSim2_cross_F{1,1}>ccthreshold&pSignificant_Sim2cr_F{1,1}<pthreshold)./numel(pSignificant_Sim2cr_F{1,1})
+sum(ccSim2_cross_F{1,2}>ccthreshold&pSignificant_Sim2cr_F{1,2}<pthreshold)./numel(pSignificant_Sim2cr_F{1,2})
+
+
+figure
+subplot(131)
+histogram(pSignificant_Sim1_F{1,1},'Normalization','probability','BinWidth',0.1);hold on;
+histogram(pSignificant_Sim1_F{1,2},'Normalization','probability','BinWidth',0.1)
+legend('Monkey1','Monkey2')
+subplot(132)
+histogram(pSignificant_Sim2sq_F{1,1},'Normalization','probability','BinWidth',0.1);hold on;
+histogram(pSignificant_Sim2sq_F{1,2},'Normalization','probability','BinWidth',0.1)
+
+subplot(133)
+histogram(pSignificant_Sim2cr_F{1,1},'Normalization','probability');hold on;
+histogram(pSignificant_Sim2cr_F{1,2},'Normalization','probability','BinWidth',0.1)
+
+
+function [ccTheo2_cross_F,ccSim2_cross_F,ccTheo2_square_F,ccSim2_square_F,ccTheo1_F,ccSim1_F,pSignificant_Theo1_F,pSignificant_Theo2sq_F,pSignificant_Theo2cr_F,pSignificant_Sim1_F,pSignificant_Sim2sq_F,pSignificant_Sim2cr_F] = ccComputeCombined (MonkeyNum,shuffle)
 
 
 
-
-function [ccTheo2_cross_F,ccSim2_cross_F,ccTheo2_square_F,ccSim2_square_F,ccTheo1_F,ccSim1_F,pSignificant_Theo1_F,pSignificant_Theo2sq_F,pSignificant_Theo2cr_F,pSignificant_Sim1_F,pSignificant_Sim2sq_F,pSignificant_Sim2cr_F,slope_fit,Rsquared] = ccComputeCombined (MonkeyNum,shuffle)
 if MonkeyNum==1
     SessionTotalNum=59;
-    load('monkey1.mat');
+    load('monkey1_filter.mat');
 else
     SessionTotalNum=71;
-    load('monkey2.mat');
+    load('monkey2_filter.mat');
 end
 MonkeySessionList=[1:SessionTotalNum];
 contrastAll=0; % flag to denote if we want to pick the all the contrasts or just the highest contrast.
 %% Compute Theo and experimental CCs for each session
 for SelectedSession=1:SessionTotalNum   
     SelectedSession
-    if MonkeyNum==1
-        SessionData=monkey1{SelectedSession};
-    else
-        SessionData=monkey2{SelectedSession};
-    end
+    SessionData=data{SelectedSession};
     %% Find same contrast  
     Contrast=SessionData.contrast;
     Union_Contrast=unique(Contrast)
@@ -125,6 +170,10 @@ for SelectedSession=1:SessionTotalNum
     Orientation=Orientation-mean(Orientation);
     response=double(SessionData.Counts_matrix);
     n=size(response,2);
+    if n<2
+        continue;
+    end
+    
     Stimulus1=Stimulus(Index_SelectContrast);
     Choice1=Choice(Index_SelectContrast);    
     Stimulus1=Stimulus1.*2-1;
@@ -157,12 +206,13 @@ for SelectedSession=1:SessionTotalNum
 [ccTheo,ccSim,CCPredRatio(SelectedSession),zeta(SelectedSession),delta(SelectedSession),n_half_fit(SelectedSession),us_S1(SelectedSession),us_S0(SelectedSession),OrientationMidMeaningful{SelectedSession},Choice_A_Ratio{SelectedSession},predRatio{SelectedSession}] = v1_ccAnalysis (Stimulus1,Choice1,Orientation1,response1,shuffle,sT,sbar,sp,sn);
 sp_all(SelectedSession)=sp;
 sn_all(SelectedSession)=sn;
-ccTheo1(SelectedSession,:)=ccTheo(1:n);
-ccTheo2_square(SelectedSession,:)=ccTheo(n+1:2*n);
-ccTheo2_cross(SelectedSession,:)=ccTheo(2*n+1:end);
-ccSim1(SelectedSession,:)=ccSim(1:n);
-ccSim2_square(SelectedSession,:)=ccSim(n+1:2*n);
-ccSim2_cross(SelectedSession,:)=ccSim(2*n+1:end);
+
+ccTheo1{SelectedSession}=ccTheo(1:n);
+ccTheo2_square{SelectedSession}=ccTheo(n+1:2*n);
+ccTheo2_cross{SelectedSession}=ccTheo(2*n+1:end);
+ccSim1{SelectedSession}=ccSim(1:n);
+ccSim2_square{SelectedSession}=ccSim(n+1:2*n);
+ccSim2_cross{SelectedSession}=ccSim(2*n+1:end);
 
 %%     
 [ccTheo1BS,ccTheo2_squareBS,ccTheo2_crossBS,ccSim1BS,ccSim2_squareBS,ccSim2_crossBS] = ccSignificance (Stimulus1,Choice1,Orientation1,response1,shuffle,sT,sp,sn);
@@ -186,18 +236,18 @@ ccSim2_cross(SelectedSession,:)=ccSim(2*n+1:end);
 % ylabel('probability')
 
 
-mu_Theo1(SelectedSession,:)=mean(ccTheo1BS);
-std_Theo_1(SelectedSession,:)=std(ccTheo1BS);
-mu_Theo2square(SelectedSession,:)=mean(ccTheo2_squareBS);
-std_Theo2square(SelectedSession,:)=std(ccTheo2_squareBS);
-mu_Theo2cross(SelectedSession,:)=mean(ccTheo2_crossBS);
-std_Theo2cross(SelectedSession,:)=std(ccTheo2_crossBS);
-mu_Sim1(SelectedSession,:)=mean(ccSim1BS);
-std_Sim_1(SelectedSession,:)=std(ccSim1BS);
-mu_Sim2square(SelectedSession,:)=mean(ccSim2_squareBS);
-std_Sim2square(SelectedSession,:)=std(ccSim2_squareBS);
-mu_Sim2cross(SelectedSession,:)=mean(ccSim2_crossBS);
-std_Sim2cross(SelectedSession,:)=std(ccSim2_crossBS);
+mu_Theo1{SelectedSession}=mean(ccTheo1BS);
+std_Theo_1{SelectedSession}=std(ccTheo1BS);
+mu_Theo2square{SelectedSession}=mean(ccTheo2_squareBS);
+std_Theo2square{SelectedSession}=std(ccTheo2_squareBS);
+mu_Theo2cross{SelectedSession}=mean(ccTheo2_crossBS);
+std_Theo2cross{SelectedSession}=std(ccTheo2_crossBS);
+mu_Sim1{SelectedSession}=mean(ccSim1BS);
+std_Sim_1{SelectedSession}=std(ccSim1BS);
+mu_Sim2square{SelectedSession}=mean(ccSim2_squareBS);
+std_Sim2square{SelectedSession}=std(ccSim2_squareBS);
+mu_Sim2cross{SelectedSession}=mean(ccSim2_crossBS);
+std_Sim2cross{SelectedSession}=std(ccSim2_crossBS);
 
 %% Compute Accuracy
 thetahat_0=sqrt(2*log(sigma_p/sigma_n)/(1/sigma_n^2-1/sigma_p^2));
@@ -208,22 +258,17 @@ Accuracy_opt(SelectedSession)=0.5+0.25*I0compute(thetahat_0,sqrt(sp))-0.25*I0com
 end
 
 %% linear fit for every session
-for SelectedSession=1:SessionTotalNum     
-    [slope_fit1(SelectedSession)] = Fitting_cc (ccTheo1(SelectedSession,:),ccSim1(SelectedSession,:))
-    [slope_fit2_cross(SelectedSession)] = Fitting_cc (ccTheo2_cross(SelectedSession,:),ccSim2_cross(SelectedSession,:))
-    [slope_fit2_square(SelectedSession)] = Fitting_cc (ccTheo2_square(SelectedSession,:),ccSim2_square(SelectedSession,:))
-    ccSim2_cross_est= slope_fit2_cross(SelectedSession).*ccTheo2_cross(SelectedSession,:);
-    ccSim1_est= slope_fit1(SelectedSession).*ccTheo1(SelectedSession,:);
-    ccSim2_square_est= slope_fit2_square(SelectedSession).*ccTheo2_square(SelectedSession,:);        
-    Rsquare_cross(SelectedSession)= calculateR2(ccSim2_cross(SelectedSession,:),ccSim2_cross_est);
-    Rsquare_square(SelectedSession)= calculateR2(ccSim2_square(SelectedSession,:),ccSim2_square_est);
-    Rsquare_1(SelectedSession)= calculateR2(ccSim1(SelectedSession,:),ccSim1_est);
+for SelectedSession=1:SessionTotalNum
+    SessionData=data{SelectedSession};
+    response=double(SessionData.Counts_matrix);
+    n=size(response,2);
+    if n<2
+        continue;
+    end
+    [slope_fit1(SelectedSession)] = Fitting_cc (ccTheo1{SelectedSession},ccSim1{SelectedSession})
+    [slope_fit2_cross(SelectedSession)] = Fitting_cc (ccTheo2_cross{SelectedSession},ccSim2_cross{SelectedSession})
+    [slope_fit2_square(SelectedSession)] = Fitting_cc (ccTheo2_square{SelectedSession},ccSim2_square{SelectedSession})
 end
-
-Rsquare_cross=roundn(Rsquare_cross,-2);
-Rsquare_square=roundn(Rsquare_square,-2);
-Rsquare_1=roundn(Rsquare_1,-2);
-
 
 %% Filtering sessions according to Accuracy
 if MonkeyNum==1
@@ -234,74 +279,58 @@ end
 MonkeySessionList_Filtered=MonkeySessionList(Accuracy>=Accu_thre);
 
 %% Filtered CCs and Significance
-ccSim2_cross_F=reshape(ccSim2_cross(MonkeySessionList_Filtered,:),1,[]);
-ccTheo2_cross_F=reshape(ccTheo2_cross(MonkeySessionList_Filtered,:),1,[]);
-ccSim2_square_F=reshape(ccSim2_square(MonkeySessionList_Filtered,:),1,[]);
-ccTheo2_square_F=reshape(ccTheo2_square(MonkeySessionList_Filtered,:),1,[]);
-ccSim1_F=reshape(ccSim1(MonkeySessionList_Filtered,:),1,[]);
-ccTheo1_F=reshape(ccTheo1(MonkeySessionList_Filtered,:),1,[]);
+ccSim2_cross_F=double.empty(1,0);
+ccSim2_square_F=double.empty(1,0);
+ccSim1_F=double.empty(1,0);
+ccTheo2_cross_F=double.empty(1,0);
+ccTheo2_square_F=double.empty(1,0);
+ccTheo1_F=double.empty(1,0);
 
-%% 
 for jj=1:numel(MonkeySessionList_Filtered)
+    SessionData=data{jj};
+    response=double(SessionData.Counts_matrix);
+    n=size(response,2);
+    if n<2
+        continue;
+    end
     FilteredSessionNum=MonkeySessionList_Filtered(jj);
-    pSignificant_Theo1(jj,:) = 1-normcdf(ccTheo1(FilteredSessionNum,:),mu_Theo1(FilteredSessionNum,:),std_Theo_1(FilteredSessionNum,:));
-    pSignificant_Theo2sq(jj,:)  = 1-normcdf(ccTheo2_square(FilteredSessionNum,:),mu_Theo2square(FilteredSessionNum,:),std_Theo2square(FilteredSessionNum,:));
-    pSignificant_Theo2cr(jj,:)  = 1-normcdf(ccTheo2_cross(FilteredSessionNum,:),mu_Theo2cross(FilteredSessionNum,:),std_Theo2cross(FilteredSessionNum,:));
-    pSignificant_Sim1(jj,:)  = 1-normcdf(ccSim1(FilteredSessionNum,:),mu_Sim1(FilteredSessionNum,:),std_Sim_1(FilteredSessionNum,:));
-    pSignificant_Sim2sq(jj,:)  = 1-normcdf(ccSim2_square(FilteredSessionNum,:),mu_Sim2square(FilteredSessionNum,:),std_Sim2square(FilteredSessionNum,:));
-    pSignificant_Sim2cr(jj,:)  = 1-normcdf(ccSim2_cross(FilteredSessionNum,:),mu_Sim2cross(FilteredSessionNum,:),std_Sim2cross(FilteredSessionNum,:));
+    ccSim2_cross_F=[ccSim2_cross_F,ccSim2_cross{FilteredSessionNum}];
+    ccTheo2_cross_F=[ccTheo2_cross_F,ccTheo2_cross{FilteredSessionNum}];
+    ccSim2_square_F=[ccSim2_square_F,ccSim2_square{FilteredSessionNum}];
+    ccTheo2_square_F=[ccTheo2_square_F,ccTheo2_square{FilteredSessionNum}];
+    ccSim1_F=[ccSim1_F,ccSim1{FilteredSessionNum}];
+    ccTheo1_F=[ccTheo1_F,ccTheo1{FilteredSessionNum}];
+end
+%% 
+
+pSignificant_Theo1_F=double.empty(1,0);
+pSignificant_Theo2sq_F=double.empty(1,0);
+pSignificant_Theo2cr_F=double.empty(1,0);
+pSignificant_Sim1_F=double.empty(1,0);
+pSignificant_Sim2sq_F=double.empty(1,0);
+pSignificant_Sim2cr_F=double.empty(1,0);
+
+for jj=1:numel(MonkeySessionList_Filtered)
+    SessionData=data{jj};
+    response=double(SessionData.Counts_matrix);
+    n=size(response,2);
+    if n<2
+        continue;
+    end
+    FilteredSessionNum=MonkeySessionList_Filtered(jj);
+    pSignificant_Theo1_F=[pSignificant_Theo1_F, 1-normcdf(ccTheo1{FilteredSessionNum},mu_Theo1{FilteredSessionNum},std_Theo_1{FilteredSessionNum})];
+    pSignificant_Theo2sq_F =[pSignificant_Theo2sq_F, 1-normcdf(ccTheo2_square{FilteredSessionNum},mu_Theo2square{FilteredSessionNum},std_Theo2square{FilteredSessionNum})];
+    pSignificant_Theo2cr_F  = [pSignificant_Theo2cr_F,1-normcdf(ccTheo2_cross{FilteredSessionNum},mu_Theo2cross{FilteredSessionNum},std_Theo2cross{FilteredSessionNum})];
+    pSignificant_Sim1_F  = [pSignificant_Sim1_F,1-normcdf(ccSim1{FilteredSessionNum},mu_Sim1{FilteredSessionNum},std_Sim_1{FilteredSessionNum})];
+    pSignificant_Sim2sq_F  = [pSignificant_Sim2sq_F,1-normcdf(ccSim2_square{FilteredSessionNum},mu_Sim2square{FilteredSessionNum},std_Sim2square{FilteredSessionNum})];
+    pSignificant_Sim2cr_F = [pSignificant_Sim2cr_F,1-normcdf(ccSim2_cross{FilteredSessionNum},mu_Sim2cross{FilteredSessionNum},std_Sim2cross{FilteredSessionNum})];
 end
 
-pSignificant_Theo1_F=reshape(pSignificant_Theo1,1,[]);
-pSignificant_Theo2sq_F=reshape(pSignificant_Theo2sq,1,[]);
-pSignificant_Theo2cr_F=reshape(pSignificant_Theo2cr,1,[]);
-pSignificant_Sim1_F=reshape(pSignificant_Sim1,1,[]);
-pSignificant_Sim2sq_F=reshape(pSignificant_Sim2sq,1,[]);
-pSignificant_Sim2cr_F=reshape(pSignificant_Sim2cr,1,[]);
-
-%% cc test in each session
-jj=0;
-figure
-for kk=1:numel(MonkeySessionList_Filtered)
-    jj=jj+1;    
-    Pointsize=1;
-        subplot(5,10,jj)
-        SelectedSession=MonkeySessionList_Filtered(kk);
-
-            
-        
-        plot(ccTheo2_cross(SelectedSession,:),ccSim2_cross(SelectedSession,:),'r.','markersize', 1);hold on;
-        plot(ccTheo1(SelectedSession,:),ccSim1(SelectedSession,:),'b.','markersize', 1);hold on;
-        plot(ccTheo2_square(SelectedSession,:),ccSim2_square(SelectedSession,:),'g.','markersize', 1);hold on;
-        plot([-1,1],slope_fit1(SelectedSession).*[-1,1],'b-','markersize', 6);hold on;
-        plot([-1,1],slope_fit2_cross(SelectedSession).*[-1,1],'r-','markersize', 6);hold on;
-        plot([-1,1],slope_fit2_square(SelectedSession).*[-1,1],'g-','markersize', 6);hold on;
-        plot([-1,1],[-1,1] ,'k-','markersize', 6);hold on;
-        axis square;
-        txt = {['R^2_{1}:' num2str(Rsquare_1(SelectedSession))],['R^2_{s}:' num2str(Rsquare_square(SelectedSession))],['R^2_{c}:' num2str(Rsquare_cross(SelectedSession))]};
-        text(0.2,-0.5,txt);
-
-        set(gca,'XTick',[-1,1]);
-        set(gca,'YTick',[-1,1]);
-        set(gca,'Yticklabel',[-1,1]);
-        set(gca,'Xticklabel',[-1,1]);
-        axis([-1 1 -1 1]);
-        title(['Session' num2str(MonkeySessionList_Filtered(kk))]);
-end
-slope_fit=[slope_fit1(MonkeySessionList_Filtered),slope_fit2_square(MonkeySessionList_Filtered),slope_fit2_cross(MonkeySessionList_Filtered)];
-Rsquared=[Rsquare_1(MonkeySessionList_Filtered),Rsquare_square(MonkeySessionList_Filtered),Rsquare_cross(MonkeySessionList_Filtered)];
 
 
-%% R squared vs slope
-figure
-plot(slope_fit2_cross(MonkeySessionList_Filtered),Rsquare_cross(MonkeySessionList_Filtered),'r.','markersize', 10);hold on;
-plot(slope_fit1(MonkeySessionList_Filtered),Rsquare_1(MonkeySessionList_Filtered),'b.','markersize', 10);hold on;
-plot(slope_fit2_square(MonkeySessionList_Filtered),Rsquare_square(MonkeySessionList_Filtered),'g.','markersize', 10);hold on;
-axis square;
-xlabel('slope','FontSize',10);
-ylabel('Rsquared','FontSize',10);
-legend('cross','linear','square');
-axis([0 2 -1 1]);
+
+
+
 
 end
 
@@ -309,7 +338,7 @@ end
 function [ccTheo1BS,ccTheo2_squareBS,ccTheo2_crossBS,ccSim1BS,ccSim2_squareBS,ccSim2_crossBS] = ccSignificance (Stimulus1,Choice1,Orientation1,response1,shuffle,sT,sp,sn)
      %% Compute the null distribution
      n=size(response1,2);
-     Bootstrap_Times=1;
+     Bootstrap_Times=100;
     for kk=1 : Bootstrap_Times
         % Compute ccTheo shuffled to estimate the shuffled distribution
         % parameters
@@ -746,12 +775,4 @@ function [rmean_Shatn,rmean_Shatp] = R_Centralization_decoded(response1_Sn, resp
     rmean_Shatp=repmat(mean(response1_Shatp,1),mp,1);
 end
 
-function R2 = calculateR2(z,z_est)
-% calcuateR2 Cacluate R-squared
-r = z-z_est;
-normr = norm(r);
-SSE = normr.^2;
-SST = norm(z-mean(z))^2;
-R2 = 1 - SSE/SST;
-end
 
