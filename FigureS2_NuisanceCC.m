@@ -1,3 +1,4 @@
+%% This code generates Figure S2: Comparing choice correlations caused by internal and external noise.
 clear
 close all
 clc
@@ -38,6 +39,8 @@ set(gca,'linewidth',1,'fontsize',10,'fontname','CMU Serif');
 function [cc_s1_theo,cc_s1s2_sim]=NuisanceCCsimulation(J12eqzero)
     n=50;
     m=10000;
+    RepeatedRounds=10;
+    
     if J12eqzero==0
         count=0;
         while (count==0)
@@ -61,8 +64,8 @@ function [cc_s1_theo,cc_s1s2_sim]=NuisanceCCsimulation(J12eqzero)
     s2=sqrt(nuivar).*randn(1,m);
     s2_fix=ones(1,m);
     Sigma=1.*eye(n);
-    RT=10;
-    for jj=1:RT
+    
+    for jj=1:RepeatedRounds
         for j=1:m
             r_s1(j,:) = f.*s1(j)+g.*s2(j)+mvnrnd(zeros(1,n),Sigma,1);
         end
